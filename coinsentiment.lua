@@ -1,11 +1,12 @@
 require "irc"
 local sleep = require "socket".sleep
+local http = require ("socket.http")
 
 -- Parameters
 local debug = false
 local test = false
 local scoreModifier = 0
-local botNick = "darkFun"
+local botNick = "murkmans"
 
 -- Utils
 function dateAndTime()
@@ -13,6 +14,11 @@ function dateAndTime()
 	local t = string.format("%02d:%02d:%02d", time.hour, time.min, time.sec)
 	local d = time.day.."/"..time.month
 	return d, t
+end
+
+function currentPrice()
+	local priceForOneGBP = http.request("http://blockchain.info/tobtc?currency=GBP&value=1")
+	return 1/priceForOneGBP
 end
 
 -- Sentiment analysis
@@ -27,7 +33,7 @@ function scoreText(text, channel)
 		local found = string.find(string.gsub(lowercaseText,"(.*)"," %1 "), "[^%a]"..sentiment.."[^%a]")
 		if found ~= nil then
 			total = total + score + scoreModifier
-			local json = string.format('{"c":[{"v":"%s"}, {"v":%i}]},', dateTime, total)
+			local json = string.format('{"c":[{"v":"%s"}, {"v":%i}, {"v":%f} ]},', dateTime, total, currentPrice())
 			print(time.." "..channel..": Found ..'"..sentiment.."' in '"..text.."'")
 			os.execute("echo \'"..json.."\' >> /var/www/coin/data.json")
 		end
@@ -46,7 +52,7 @@ if test ~= true then
 		end
 	end)
 	s:hook("OnJoin", function(user, channel)
-		if user.nick == botnick then 
+		if user.nick == botNick then 
 			print ("JOINED channel: "..channel)
 		end
 	end)
