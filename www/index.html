@@ -5,7 +5,7 @@
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
     
-    // Load the Visualization API and the piechart package.
+    // Load the Visualization API and the corechart package.
     google.load('visualization', '1', {'packages':['corechart']});
       
     // Set a callback to run when the Google Visualization API is loaded.
@@ -21,11 +21,10 @@
       // Create our data table out of JSON data loaded from server.
       var data = new google.visualization.DataTable(jsonData);
       var options = {
-        title: 'How many mans I have murked',
+        title: 'Bitcoin sentiment',
 		width: 900, 
 		height: 600
      };
-
 
       // Instantiate and draw our chart, passing in some options.
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));

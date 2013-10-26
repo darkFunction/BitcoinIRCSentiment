@@ -1,38 +1,54 @@
 require "irc"
 local sleep = require "socket".sleep
-local debug= false
-local test = true
+
+-- Parameters
+local debug = false
+local test = false
 local scoreModifier = 0
+local botNick = "darkFun"
+
+-- Utils
+function dateAndTime()
+	local time = os.date("*t")
+	local t = string.format("%02d:%02d:%02d", time.hour, time.min, time.sec)
+	local d = time.day.."/"..time.month
+	return d, t
+end
 
 -- Sentiment analysis
 local moods = dofile("moods.lua")
 local total = 0
 function scoreText(text, channel)
 	local lowercaseText = string.lower(text)
-	local time = os.date("*t")
-	local formattedTime = string.format("%02d:%02d:%02d", time.hour, time.min, time.sec)
-	local formattedDate = time.day.."/"..time.month
-	local dateAndTime = formattedDate .. " " .. formattedTime
+	local date, time = dateAndTime()
+	local dateTime = date.." "..time
+
 	for sentiment, score in pairs(moods) do
 		local found = string.find(string.gsub(lowercaseText,"(.*)"," %1 "), "[^%a]"..sentiment.."[^%a]")
 		if found ~= nil then
 			total = total + score + scoreModifier
-			local json = string.format('{"c":[{"v":"%s"}, {"v":%i}]},', dateAndTime, total)
-			print(formattedTime.." "..channel..": Found ..'"..sentiment.."' in '"..text.."'")
+			local json = string.format('{"c":[{"v":"%s"}, {"v":%i}]},', dateTime, total)
+			print(time.." "..channel..": Found ..'"..sentiment.."' in '"..text.."'")
 			os.execute("echo \'"..json.."\' >> /var/www/coin/data.json")
 		end
 	end
 end
 
-if test == true then
-	scoreText("wonlost", "channel")
-	scoreText("Won. lost. Stegosaurus.", "channel")
-	scoreText("Fantasticfantastic Fantastic", "channel")
-else
+if test ~= true then
 	-- Connect to server and setup callbacks 
-	local s = irc.new{nick = "darkFun"}
+	local s = irc.new{nick = botNick}
 	s:hook("OnChat", function(user, channel, message)
 		scoreText(message, channel)
+	end)
+	s:hook("OnKick", function(channel, nick, kicker, reason)
+		if nick == botNick then
+			print ("*** KICKED from channel: "..channel.." Reason: "..reason)
+		end
+	end)
+	s:hook("OnJoin", function(user, channel)
+		if user.nick == botnick then 
+			print ("JOINED channel: "..channel)
+		end
 	end)
 	if debug then
 		function debugHook(line)
@@ -55,4 +71,8 @@ else
 		s:think()
 		sleep(0.5)
 	end
+else -- test
+	scoreText("wonlost", "channel")
+	scoreText("Won. lost. Stegosaurus.", "channel")
+	scoreText("Fantasticfantastic Fantastic", "channel")
 end
