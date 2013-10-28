@@ -1,4 +1,5 @@
 require "irc"
+require "SentimentAnalyser"
 local sleep = require "socket".sleep
 local http = require ("socket.http")
 
@@ -11,7 +12,6 @@ local debug = false
 local test = false
 local scoreModifier = 0
 local botNick = "murkmans"
-local moods = dofile("moods.lua")
 local channels = dofile("channels.lua")
 local sentimentIndex = lastSentimentIndex()
 
@@ -26,21 +26,18 @@ end
 local lastPrice = 0
 function currentPrice()
 	local priceForOneGBP = http.request("http://blockchain.info/tobtc?currency=GBP&value=1")
-	--if type(priceForOneGBP) == "number" then
+	if priceForOneGBP ~= nil then
 		lastPrice = 1/priceForOneGBP
-	--end
+	end
 	return lastPrice
 end
 
 -- Sentiment analysis
 function scoreText(text, channel)
-	local lowercaseText = string.lower(text)
-	for sentiment, score in pairs(moods) do
-		local found = string.find(string.gsub(lowercaseText,"(.*)"," %1 "), "[^%a]"..sentiment.."[^%a]")
-		if found ~= nil then
-			sentimentIndex = sentimentIndex + score + scoreModifier
-			print(channel..": Found ..'"..sentiment.."' in '"..text.."'")
-		end
+	local score = SentimentAnalyser.process(text)
+	if score ~= 0 then
+		sentimentIndex = sentimentIndex + score
+		print(channel..": ("..score..") "..text)
 	end
 end
 
