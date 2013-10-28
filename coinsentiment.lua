@@ -2,11 +2,18 @@ require "irc"
 local sleep = require "socket".sleep
 local http = require ("socket.http")
 
+function lastSentimentIndex()
+	return 0	
+end
+
 -- Parameters
 local debug = false
 local test = false
 local scoreModifier = 0
 local botNick = "murkmans"
+local moods = dofile("moods.lua")
+local channels = dofile("channels.lua")
+local sentimentIndex = lastSentimentIndex()
 
 -- Utils
 function dateAndTime()
@@ -16,28 +23,32 @@ function dateAndTime()
 	return d, t
 end
 
+local lastPrice = 0
 function currentPrice()
 	local priceForOneGBP = http.request("http://blockchain.info/tobtc?currency=GBP&value=1")
-	return 1/priceForOneGBP
+	--if type(priceForOneGBP) == "number" then
+		lastPrice = 1/priceForOneGBP
+	--end
+	return lastPrice
 end
 
 -- Sentiment analysis
-local moods = dofile("moods.lua")
-local total = 0
 function scoreText(text, channel)
 	local lowercaseText = string.lower(text)
-	local date, time = dateAndTime()
-	local dateTime = date.." "..time
-
 	for sentiment, score in pairs(moods) do
 		local found = string.find(string.gsub(lowercaseText,"(.*)"," %1 "), "[^%a]"..sentiment.."[^%a]")
 		if found ~= nil then
-			total = total + score + scoreModifier
-			local json = string.format('{"c":[{"v":"%s"}, {"v":%i}, {"v":%f} ]},', dateTime, total, currentPrice())
-			print(time.." "..channel..": Found ..'"..sentiment.."' in '"..text.."'")
-			os.execute("echo \'"..json.."\' >> /var/www/coin/data.json")
+			sentimentIndex = sentimentIndex + score + scoreModifier
+			print(channel..": Found ..'"..sentiment.."' in '"..text.."'")
 		end
 	end
+end
+
+function updateData()
+	local date, time = dateAndTime()
+	local dateTime = date.." "..time
+	local json = string.format('{"c":[{"v":"%s"}, {"v":%i}, {"v":%f} ]},', dateTime, sentimentIndex, currentPrice())
+	os.execute("echo \'"..json.."\' >> /var/www/coin/data.json")
 end
 
 if test ~= true then
@@ -66,16 +77,21 @@ if test ~= true then
 	s:connect("chat.freenode.net")
 	
 	-- Join channels
-	local channels = dofile("channels.lua")
 	for _,channel in ipairs(channels) do
 		s:join(channel)
 		sleep(0.3)
 	end
 	
 	-- Run loop
+	local seconds = 0
 	while true do
+		sleep(1)
 		s:think()
-		sleep(0.5)
+		seconds = seconds + 1
+		if seconds >= 60 then 
+			seconds = 0
+			updateData()
+		end
 	end
 else -- test
 	scoreText("wonlost", "channel")
