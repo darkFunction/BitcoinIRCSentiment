@@ -1,5 +1,7 @@
 require "irc"
 require "SentimentAnalyser"
+require "BitcoinPrice"
+
 local sleep = require "socket".sleep
 local http = require ("socket.http")
 
@@ -11,9 +13,10 @@ end
 local debug = false
 local test = false
 local scoreModifier = 0
-local botNick = "murkmans"
+local botNick = "darkFunc"
 local channels = dofile("channels.lua")
 local sentimentIndex = lastSentimentIndex()
+local updateInterval = 15 -- should be > 10 (if using mtgox ticker)
 
 -- Utils
 function dateAndTime()
@@ -23,13 +26,8 @@ function dateAndTime()
 	return d, t
 end
 
-local lastPrice = 0
 function currentPrice()
-	local priceForOneGBP = http.request("http://blockchain.info/tobtc?currency=GBP&value=1")
-	if priceForOneGBP ~= nil then
-		lastPrice = 1/priceForOneGBP
-	end
-	return lastPrice
+	return BitcoinPrice.getMtGoxPrice()
 end
 
 -- Sentiment analysis
@@ -85,7 +83,7 @@ if test ~= true then
 		sleep(1)
 		s:think()
 		seconds = seconds + 1
-		if seconds >= 60 then 
+		if seconds >= updateInterval then 
 			seconds = 0
 			updateData()
 		end

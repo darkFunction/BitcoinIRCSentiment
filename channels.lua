@@ -19,7 +19,6 @@ return {
 	"#bitcoin-cad",
 	"#bitcoin-cn",
 	"#bitcoin-dk",
-	"#bitcoin-de",
 	"#bitcoin-il",
 	"#bitcoin-nl",
 	"#bitcoin-romania",

@@ -1,10 +1,11 @@
 require "irc"
 require "SentimentAnalyser"
-
 local sleep = require "socket".sleep
-local trigger = "murkmans"
 
-local s = irc.new{nick = "murkmans"}
+local name = "murkmans"
+local trigger = name
+local s = irc.new{nick = name}
+local debug = true
 
 s:hook("OnChat", function(user, channel, message)
 	local found = string.find(message, trigger)	
@@ -14,13 +15,15 @@ s:hook("OnChat", function(user, channel, message)
 	end
 end)
 
---function debugHook(line)
---    print(line)
---end
---s:hook("OnRaw", debugHook)
---s:hook("OnSend", debugHook)
+if debug == true then
+	function debugHook(line)
+   	 print(line)
+	end
+	s:hook("OnRaw", debugHook)
+	s:hook("OnSend", debugHook)
+end
 
-s:connect("irc.efnet.org")
+s:connect("irc.mzima.net")
 s:join("#perthroad")
 
 while true do
