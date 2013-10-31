@@ -20,7 +20,6 @@ return {
 	"#bitcoin-cn",
 	"#bitcoin-dk",
 	"#bitcoin-il",
-	"#bitcoin-nl",
 	"#bitcoin-romania",
 	"#bitcoin-ve",
 	"#btc.chat",
