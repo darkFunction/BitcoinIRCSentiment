@@ -1,6 +1,8 @@
 local negativeWords = dofile("words_negative.lua")
 local positiveWords = dofile("words_positive.lua")
 local negationWords = dofile("words_negations.lua")
+local positivePhrases = dofile("phrases_positive.lua")
+local negativePhrases = dofile("phrases_negative.lua")
 
 local GOOD = 1
 local BAD = -1
@@ -9,9 +11,23 @@ local NOT_BAD = 1
 
 SentimentAnalyser = {}
 
+local function markPhrases(text, phraseList)
+	for _, phrase in pairs(phraseList) do 
+		local s, e = string.find(string.upper(text), phrase)
+		if s then 
+			local foundPhrase = string.sub(text, s, e)
+			local phraseWithUnderscores = string.gsub(foundPhrase, " ", "_")
+			text = string.gsub(text, foundPhrase, phraseWithUnderscores)
+		end
+	end
+	return text
+end
+
+print ( markPhrases("i had a Break Through yay", positivePhrases) )
+
 local function splitString(text) 
 	local words = {}
-	for word in text:gmatch("[a-zA-Z']+") do 
+	for word in text:gmatch("[a-zA-Z'_]+") do 
 		table.insert(words, word) 
 	end
 	return words
