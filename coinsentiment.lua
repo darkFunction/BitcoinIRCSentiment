@@ -35,7 +35,8 @@ function scoreText(text, channel)
 	local score = SentimentAnalyser.process(text)
 	if score ~= 0 then
 		sentimentIndex = sentimentIndex + score
-		print(channel..": ("..score..") "..text)
+		--print(channel..": ("..score..") "..text)
+		print(SentimentAnalyser.debugText(text))
 	end
 end
 

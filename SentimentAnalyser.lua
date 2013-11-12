@@ -1,8 +1,8 @@
-local negativeWords = dofile("words_negative.lua")
 local positiveWords = dofile("words_positive.lua")
-local negationWords = dofile("words_negations.lua")
+local negativeWords = dofile("words_negative.lua")
 local positivePhrases = dofile("phrases_positive.lua")
 local negativePhrases = dofile("phrases_negative.lua")
+local negationWords = dofile("words_negations.lua")
 
 local GOOD = 1
 local BAD = -1
@@ -11,19 +11,24 @@ local NOT_BAD = 1
 
 SentimentAnalyser = {}
 
+local function spacesToUnderscores(text) 
+	return string.gsub(text, " ", "_")
+end
+
+local function underscoresToSpaces(text) 
+	return string.gsub(text, "_", " ")
+end
+
 local function markPhrases(text, phraseList)
 	for _, phrase in pairs(phraseList) do 
 		local s, e = string.find(string.upper(text), phrase)
-		if s then 
+		if s ~= nil then 
 			local foundPhrase = string.sub(text, s, e)
-			local phraseWithUnderscores = string.gsub(foundPhrase, " ", "_")
-			text = string.gsub(text, foundPhrase, phraseWithUnderscores)
+			text = string.gsub(text, foundPhrase, spacesToUnderscores(foundPhrase))
 		end
 	end
 	return text
 end
-
-print ( markPhrases("i had a Break Through yay", positivePhrases) )
 
 local function splitString(text) 
 	local words = {}
@@ -42,11 +47,14 @@ local function isWordInList(word, wordList)
 end
 
 function SentimentAnalyser.process(text) 
+	text = markPhrases(text, positivePhrases)
+	text = markPhrases(text, negativePhrases)
+
 	local words = splitString(text)
 	local wordTypes = {}
 	for index, word in pairs(words) do
-		if isWordInList(word, negativeWords) then wordTypes[index] = "negative" end
-		if isWordInList(word, positiveWords) then wordTypes[index] = "positive" end
+		if isWordInList(word, negativeWords) or isWordInList(underscoresToSpaces(word), negativePhrases) then wordTypes[index] = "negative" end
+		if isWordInList(word, positiveWords) or isWordInList(underscoresToSpaces(word), positivePhrases) then wordTypes[index] = "positive" end
 		if isWordInList(word, negationWords) then wordTypes[index] = "negation" end
 	end
 
