@@ -1,8 +1,8 @@
-local positiveWords = dofile("words_positive.lua")
-local negativeWords = dofile("words_negative.lua")
-local positivePhrases = dofile("phrases_positive.lua")
-local negativePhrases = dofile("phrases_negative.lua")
-local negationWords = dofile("words_negations.lua")
+local positiveWords = dofile("wordlists/words_positive.lua")
+local negativeWords = dofile("wordlists/words_negative.lua")
+local positivePhrases = dofile("wordlists/phrases_positive.lua")
+local negativePhrases = dofile("wordlists/phrases_negative.lua")
+local negationWords = dofile("wordlists/words_negations.lua")
 
 local GOOD = 1
 local BAD = -1

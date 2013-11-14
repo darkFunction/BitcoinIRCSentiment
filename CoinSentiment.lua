@@ -14,7 +14,7 @@ local debug = false
 local test = false
 local scoreModifier = 0
 local botNick = "darkFunc"
-local channels = dofile("channels.lua")
+local channels = dofile("Channels.lua")
 local sentimentIndex = lastSentimentIndex()
 local updateInterval = 15 -- should be > 10 (if using mtgox ticker)
 
