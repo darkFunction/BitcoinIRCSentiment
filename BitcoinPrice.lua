@@ -29,7 +29,7 @@ function BitcoinPrice.getBlockChainPrice()
 	return lastPrice
 end
 
-function BitcoinPrice.getBitcoinAverageTicker() 
+function BitcoinPrice.getBitcoinAveragePrice() 
 	local jsonData = http.request(bitcoinAverageTicker)
 	if jsonData ~= nil then
 		local data = json.decode(jsonData)
